@@ -32,7 +32,7 @@ public class AppConfig {
                 .build();
     }
 
-    class CustomClientHttpRequestFactory extends SimpleClientHttpRequestFactory {
+    static class CustomClientHttpRequestFactory extends SimpleClientHttpRequestFactory {
         @Override
         protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
             super.prepareConnection(connection, httpMethod);

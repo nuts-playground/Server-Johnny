@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/cfa")
 public class CfaController {
 
-    private CfaService cfaService;
+    private final CfaService cfaService;
 
     @GetMapping("/cookie")
     public String getCookie(@RequestParam(name = "userId") String userId, @RequestParam(name = "userPw") String userPw) {

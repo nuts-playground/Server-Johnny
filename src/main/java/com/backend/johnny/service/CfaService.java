@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CfaService {
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     public String getCookie(String userId, String userPw) {
         String url = "https://www.cardsales.or.kr/authentication";
