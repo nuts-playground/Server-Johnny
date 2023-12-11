@@ -12,13 +12,15 @@ import org.springframework.web.servlet.ModelAndView;
 public class ApiIntercepter implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        log.info("request uri     : {}", request.getRequestURI());
+        request.setAttribute("api-time", System.currentTimeMillis());
+        log.info("request uri : " + request.getRequestURI() + ", remoteAddr : " + request.getRemoteAddr());
         return HandlerInterceptor.super.preHandle(request, response, handler);
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        log.info("response status : {}", response.getStatus());
+        long time = (long) request.getAttribute("api-time");
+        log.info("request uri : " + request.getRequestURI() + ", remoteAddr : " + request.getRemoteAddr() + ", response status : " + response.getStatus() + ", total time : " + (System.currentTimeMillis() - time) + "ms");
         HandlerInterceptor.super.postHandle(request, response, handler, modelAndView);
     }
 
