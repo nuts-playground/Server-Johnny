@@ -16,4 +16,9 @@ public class CfaController {
         return cfaService.getCookie(userId, userPw);
     }
 
+    @GetMapping("/cardAprv")
+    public String getCardAprv(@RequestParam(name = "userId") String userId, @RequestParam(name = "password") String password, @RequestParam(name = "strDate") String strDate, @RequestParam(name = "endDate") String endDate) {
+        return cfaService.getCardAprv(userId, password, strDate, endDate);
+    }
+
 }
