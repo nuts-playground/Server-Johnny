@@ -13,6 +13,27 @@ public class ApiIntercepter implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         request.setAttribute("api-time", System.currentTimeMillis());
+        String ip = request.getHeader("X-FORWARDED-FOR");
+        log.info("TEST : X-FORWARDED-FOR : " + ip);
+        if (ip == null) {
+            ip = request.getHeader("Proxy-Client-IP");
+            log.info("TEST : Proxy-Client-IP : " + ip);}
+        if (ip == null) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+            log.info("TEST : WL-Proxy-Client-IP : " + ip);
+        }
+        if (ip == null) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+            log.info("TEST : HTTP_CLIENT_IP : " + ip);
+        }
+        if (ip == null) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+            log.info("TEST : HTTP_X_FORWARDED_FOR : " + ip);
+        }
+        if (ip == null) {
+            ip = request.getRemoteAddr();
+            log.info("TEST : RemoteAddr : " + ip);
+        }
         log.info("request uri : " + request.getRequestURI() + ", remoteAddr : " + request.getRemoteAddr());
         return HandlerInterceptor.super.preHandle(request, response, handler);
     }
