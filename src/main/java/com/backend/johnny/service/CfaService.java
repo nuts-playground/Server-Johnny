@@ -1,5 +1,8 @@
 package com.backend.johnny.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -9,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,8 +27,8 @@ public class CfaService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/x-www-form-urlencoded");
-        headers.add("Origin", "https://www.cardsales.co.kr/");
-        headers.add("Referer", "https://www.cardsales.co.kr/signin");
+        headers.add("Origin", "https://www.cardsales.or.kr/");
+        headers.add("Referer", "https://www.cardsales.or.kr/signin");
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("j_username", userId);
@@ -57,37 +61,108 @@ public class CfaService {
         return cookie;
     }
 
-    public String getCardAprv(String userId, String password, String strDate, String endDate) {
-        String cookie = getCookie(userId, password);
-        String aprvUrl = createAprvUrl(strDate, endDate);
+    public String getMbrId(String cookie) throws JsonProcessingException {
+        String mbrId = null;
+
+        String url = "https://www.cardsales.or.kr/page/api/member/join/searchMember";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Origin", "https://www.cardsales.co.kr/");
+        headers.add("Origin", "https://www.cardsales.or.kr/");
         headers.add("Cookie", cookie);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
 
         ResponseEntity<String> response = restTemplate.exchange(
-                aprvUrl,
+                url,
                 HttpMethod.GET,
                 request,
                 String.class
         );
 
         String body = response.getBody();
-        System.out.println(body);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(body);
+        if (jsonNode.has("mbrId")) {
+            mbrId = jsonNode.get("mbrId").asText();
+        }
 
-        return body;
+        return mbrId;
     }
 
-    public static String createAprvUrl(String stdDate, String endDate) {
+    public List<String> getMerGrpId(String cookie) throws JsonProcessingException {
+        List<String> merGrpIdList = new ArrayList<>();
+
+        String url = "https://www.cardsales.or.kr/page/api/commonCode/merGrpCode";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Origin", "https://www.cardsales.or.kr/");
+        headers.add("Cookie", cookie);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                request,
+                String.class
+        );
+
+        String body = response.getBody();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(body);
+        if (jsonNode.isArray()) {
+            for (JsonNode node : jsonNode) {
+                if (node.has("code")) {
+                    merGrpIdList.add(node.get("code").asText());
+                }
+            }
+        }
+
+        return merGrpIdList;
+    }
+
+    public String getCardAprv(String userId, String password, String strDate, String endDate) throws JsonProcessingException {
+        String cookie = getCookie(userId, password);
+        String mbrId = getMbrId(cookie);
+        List<String> merGrpIdList = getMerGrpId(cookie);
+
+        String result = "";
+        for (String merGrpId : merGrpIdList) {
+            String aprvUrl = createAprvUrl(strDate, endDate, mbrId, merGrpId);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Origin", "https://www.cardsales.or.kr/");
+            headers.add("Cookie", cookie);
+
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    aprvUrl,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+
+            String body = response.getBody();
+            System.out.println(body);
+            result += body;
+        }
+
+        return result;
+    }
+
+    public static String createAprvUrl(String stdDate, String endDate, String mbrId, String merGrpId) {
         int std = Integer.parseInt(stdDate);
         int end = Integer.parseInt(endDate);
 
         StringBuffer sb = new StringBuffer();
         sb.append("https://www.cardsales.or.kr/page/api/approval/detailTermListAjax?");
-        sb.append("q.mbrId=11623895&");
-        sb.append("q.merGrpId=1268894544&");
+        sb.append("q.mbrId=");
+        sb.append(mbrId);
+        sb.append("&");
+        sb.append("q.merGrpId=");
+        sb.append(merGrpId);
+        sb.append("&");
         sb.append("q.stdDate=");
         sb.append(stdDate);
         sb.append("&");
@@ -105,14 +180,16 @@ public class CfaService {
         return sb.toString();
     }
 
-    public static String createPrchUrl(LocalDate stdDate, LocalDate endDate) {
+    public static String createPrchUrl(LocalDate stdDate, LocalDate endDate, String merGrpId) {
         int std = Integer.parseInt(stdDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
         int end = Integer.parseInt(endDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
 
         StringBuffer sb = new StringBuffer();
         sb.append("https://www.cardsales.or.kr/page/api/purchase/termDetail?");
         sb.append("q.searchDateCode=PCA_DATE&");
-        sb.append("q.oldMerGrpId=1268894544&");
+        sb.append("q.oldMerGrpId=");
+        sb.append(merGrpId);
+        sb.append("&");
         sb.append("q.oldSearchStrDate=");
         sb.append(stdDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         sb.append("&");
@@ -131,13 +208,15 @@ public class CfaService {
         return sb.toString();
     }
 
-    public static String createPymUrl(LocalDate stdDate, LocalDate endDate) {
+    public static String createPymUrl(LocalDate stdDate, LocalDate endDate, String merGrpId) {
         int std = Integer.parseInt(stdDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
         int end = Integer.parseInt(endDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
 
         StringBuffer sb = new StringBuffer();
         sb.append("https://www.cardsales.or.kr/page/api/payment/detailTermListAjax?");
-        sb.append("q.merGrpId=1268894544&");
+        sb.append("q.merGrpId=");
+        sb.append(merGrpId);
+        sb.append("&");
         sb.append("q.startDate=");
         sb.append(stdDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         sb.append("&");

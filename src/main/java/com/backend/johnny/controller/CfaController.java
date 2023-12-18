@@ -1,6 +1,7 @@
 package com.backend.johnny.controller;
 
 import com.backend.johnny.service.CfaService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class CfaController {
     }
 
     @GetMapping("/cardAprv")
-    public String getCardAprv(@RequestParam(name = "userId") String userId, @RequestParam(name = "password") String password, @RequestParam(name = "strDate") String strDate, @RequestParam(name = "endDate") String endDate) {
+    public String getCardAprv(@RequestParam(name = "userId") String userId, @RequestParam(name = "password") String password, @RequestParam(name = "strDate") String strDate, @RequestParam(name = "endDate") String endDate) throws JsonProcessingException {
         return cfaService.getCardAprv(userId, password, strDate, endDate);
     }
 
