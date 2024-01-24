@@ -12,10 +12,11 @@ public class WepConfig implements WebMvcConfigurer {
 
     private final ApiIntercepter apiIntercepter;
 
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(apiIntercepter)
                 .addPathPatterns("/**");
     }
+
+
 }
