@@ -1,6 +1,8 @@
 package com.backend.johnny.controller;
 
 import com.backend.johnny.dto.Member.MemberRequestDto;
+import com.backend.johnny.dto.Member.MemberResponseDto;
+import com.backend.johnny.dto.ResponseDto;
 import com.backend.johnny.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,10 +20,10 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/join")
-    public String insertMember(@RequestBody MemberRequestDto.InsertDto requestDto) {
-        memberService.insertMember(requestDto);
+    public ResponseDto insertMember(@RequestBody MemberRequestDto.InsertDto requestDto) {
+        MemberResponseDto.InsertResponseDto responseDto = memberService.insertMember(requestDto);
 
-        return "ok";
+        return new ResponseDto(responseDto);
     }
 
     @PostMapping("/login")

@@ -18,4 +18,16 @@ public class HelloController {
         return result;
     }
 
+    @GetMapping("/2")
+    public String hello2(@RequestParam(required = false) String value) {
+        if (true) {
+            throw new IllegalArgumentException("a");
+        }
+        String result = "Hello!";
+        if (value != null) {
+            result = result + " " + value;
+        }
+        return result;
+    }
+
 }

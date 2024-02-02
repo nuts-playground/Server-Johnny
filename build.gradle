@@ -40,6 +40,10 @@ dependencies {
 
     // jwt
     implementation 'com.auth0:java-jwt:4.4.0'
+
+    // BCrypt
+    implementation 'org.springframework.security:spring-security-crypto'
+
 }
 
 def generatedDir = 'src/main/generated'

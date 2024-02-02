@@ -7,6 +7,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -30,6 +31,11 @@ public class AppConfig {
                 .setReadTimeout(Duration.ofSeconds(10))
                 .requestFactory(CustomClientHttpRequestFactory.class)
                 .build();
+    }
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     static class CustomClientHttpRequestFactory extends SimpleClientHttpRequestFactory {
