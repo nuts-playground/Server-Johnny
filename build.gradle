@@ -40,6 +40,8 @@ dependencies {
 
     // jwt
     implementation 'com.auth0:java-jwt:4.4.0'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+
 
     // BCrypt
     implementation 'org.springframework.security:spring-security-crypto'
